@@ -1,29 +1,32 @@
-const express = require('express')
 const http = require('http')
-const socketIo = require('socket.io')
+const express = require('express')
+const socket = require('socket.io')
+const { ExpressPeerServer } = require('peer')
 
 const app = express()
 const server = http.createServer(app)
-const io = socketIo(server)
+const peerServer = ExpressPeerServer(server, {
+  debug: true,
+});
 
-const Port = 8000 || process.env.NodeEnv
+app.use('/peerjs', peerServer);
 
-const rooms = {}
+const io = socket(server)
 
-io.on('connection', socket => {
-  socket.on('joinRoom', roomID, => {
-    if(rooms[roomID]) {
-      rooms[roomID].push(socket.id)
-    } else {
-      rooms[roomID] = [socket.id]
-    }
-
-    const otherUser = rooms[roomID].find(id => id !== socket.id)
-    if(otherUser) {
-      socket.emit('otherUser', otherUser)
-      socket.to(otherUser).emit('user joined', socket.id)
-    }
+io.on("connection", socket => {
+  socket.on("joinRoom", (roomID, userID) => {
+    socket.join(roomID)
+    socket.to(roomID).broadcast.emit('user-connected', userID);
   })
+
+  socket.on('hello', () => {
+    console.log('say hello');
+  })
+
+  // socket.on('disconnect', () => {
+  //     socket.to(roomId).broadcast.emit('user-disconnected', userId)
+  //   })
 })
 
-server.listen(Port, () => console.log(`server is running on port ${Port}.`)) 
+
+server.listen(8000, () => console.log(`server is running on port 8000`))

@@ -1,7 +1,18 @@
 import React from 'react';
+import { BrowserRouter, Route, Switch } from "react-router-dom";
+import CreateRoom from "./routes/CreateRoom";
+import Room from "./routes/Room";
+import './App.css';
 
-export const App = () => (
-  <div>
-    <h2>Hey!!</h2>
-  </div>
-);
+export function App() {
+  return (
+    <div className="App">
+      <BrowserRouter>
+        <Switch>
+          <Route path="/" exact component={CreateRoom} />
+          <Route path="/room/:roomID" component={Room} />
+        </Switch>
+      </BrowserRouter>
+    </div>
+  );
+}
